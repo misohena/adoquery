@@ -44,7 +44,12 @@ For more SQL Syntax and properties see below.
 - [[https://docs.microsoft.com/en-us/windows/desktop/search/-search-sql-windowssearch-entry][Querying the Index with Windows Search SQL Syntax - Windows applications | Microsoft Docs]]
 - [[https://docs.microsoft.com/en-us/windows/desktop/search/-search-3x-wds-propertymappings][Property Mappings (from WDS 2.x to 3.x) - Windows applications | Microsoft Docs]]
 
-* References
+** Build
+Use Visual Studio 2017
+
+[[file:./ReleasedBinary/adoquery-1.0.0.exe]]
+
+** References
 
 - [[https://docs.microsoft.com/en-us/sql/ado/microsoft-activex-data-objects-ado?view=sql-server-2017][Microsoft ActiveX Data Objects (ADO) | Microsoft Docs]]
 - [[https://docs.microsoft.com/en-us/previous-versions//17w5ykft%28v=vs.85%29][Parsing C++ Command-Line Arguments (C++) | Microsoft Docs]]
