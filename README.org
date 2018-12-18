@@ -47,7 +47,7 @@ For more SQL Syntax and properties see below.
 ** Build
 Use Visual Studio 2017
 
-[[file:./ReleasedBinary/adoquery-1.0.0.exe]]
+[[file:./ReleasedBinary/adoquery-1.0.1.exe]]
 
 ** References
 
