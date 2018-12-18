@@ -1,0 +1,50 @@
+* Windows ADO Query Command
+** Usage:
+
+=adoquery.exe= /<option>/...
+
+- /<option>/ ::
+  - =/conn= /<connstr>/ :: (required) Connection string (see: [[https://docs.microsoft.com/en-us/sql/ado/reference/ado-api/open-method-ado-connection?view=sql-server-2017][Open Method(ADO Connection) | Microsoft Docs]])
+  - =/user= /<userid>/ :: UserID (see: [[https://docs.microsoft.com/en-us/sql/ado/reference/ado-api/open-method-ado-connection?view=sql-server-2017][Open Method(ADO Connection) | Microsoft Docs]])
+  - =/pass= /<password>/ :: Password (see: [[https://docs.microsoft.com/en-us/sql/ado/reference/ado-api/open-method-ado-connection?view=sql-server-2017][Open Method(ADO Connection) | Microsoft Docs]])
+  - =/query= /<command>/ :: (required) Query string
+  - =/header= /<format>/ :: Output format for field names
+  - =/format= /<format>/ :: Output format for field values
+  - =/escape= :: Escape special characters('\n' '\r' '\t' '\\') in output field values
+
+** Output Format
+
+/header and /format can contain the following sequences:
+
+- %<digits>% :: Output field value specified by <digits>
+- %% :: Output single %
+- \t :: Output TAB
+- \r :: Output CR
+- \n :: Output CR+LF (text mode)
+- \<char> :: Output <char>
+- <other chars> :: Output <other chars>
+
+** Example
+*** Windows Desktop Search
+
+Find files containing "hello" in file name.
+
+#+BEGIN_SRC bat
+adoquery /conn "Provider=Search.CollatorDSO;Extended Properties='Application=Windows';" /query "SELECT TOP 10 System.ItemFolderPathDisplay, System.FileName FROM SystemIndex WHERE System.FileName Like '%hello%'" /format "%1%\\%2%" /header ""
+#+END_SRC
+
+Find files containing "hello" in file name or contents.
+
+#+BEGIN_SRC bat
+adoquery /conn "Provider=Search.CollatorDSO;Extended Properties='Application=Windows';" /query "SELECT TOP 10 System.ItemFolderPathDisplay, System.FileName FROM SystemIndex WHERE (System.FileName Like '%hello%') or Contains('hello')" /format "%1%\\%2%" /header ""
+#+END_SRC
+
+For more SQL Syntax and properties see below.
+
+- [[https://docs.microsoft.com/en-us/windows/desktop/search/-search-sql-windowssearch-entry][Querying the Index with Windows Search SQL Syntax - Windows applications | Microsoft Docs]]
+- [[https://docs.microsoft.com/en-us/windows/desktop/search/-search-3x-wds-propertymappings][Property Mappings (from WDS 2.x to 3.x) - Windows applications | Microsoft Docs]]
+
+* References
+
+- [[https://docs.microsoft.com/en-us/sql/ado/microsoft-activex-data-objects-ado?view=sql-server-2017][Microsoft ActiveX Data Objects (ADO) | Microsoft Docs]]
+- [[https://docs.microsoft.com/en-us/previous-versions//17w5ykft%28v=vs.85%29][Parsing C++ Command-Line Arguments (C++) | Microsoft Docs]]
