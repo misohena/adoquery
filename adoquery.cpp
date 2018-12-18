@@ -157,7 +157,7 @@ int _tmain(int argc, TCHAR *argv[])
 				});
 			if(optIt == std::end(options)){
 				_ftprintf(stderr, _T("Unknown option %s\n"), arg);
-				return -1;
+				return 1;
 			}
 
 			if(optIt->boolPtr){
@@ -166,7 +166,7 @@ int _tmain(int argc, TCHAR *argv[])
 			if(optIt->strPtr){
 				if(i + 1 >= argc) {
 					_ftprintf(stderr, _T("Specify value of %s option\n"), arg);
-					return -1;
+					return 1;
 				}
 				++i;
 				optIt->strPtr->assign(argv[i]);
@@ -174,7 +174,7 @@ int _tmain(int argc, TCHAR *argv[])
 		}
 		else{
 			_ftprintf(stderr, _T("Unknown option %s\n"), arg);
-			return -1;
+			return 1;
 		}
 	}
 
@@ -196,7 +196,7 @@ int _tmain(int argc, TCHAR *argv[])
 			_tprintf(_T("    %s\n"), opt.description);
 
 		}
-		return -1;
+		return 1;
 	}
 
 	// Set locale
@@ -206,6 +206,7 @@ int _tmain(int argc, TCHAR *argv[])
 	::CoInitialize(NULL);
 
 	// Access DB
+	bool hasError = false;
 	ADODB::_ConnectionPtr connection;
 	try{
 		if(connection.CreateInstance(__uuidof(ADODB::Connection)) == S_OK){
@@ -241,12 +242,16 @@ int _tmain(int argc, TCHAR *argv[])
 					recordset->MoveNext();
 				}
 			}
+
+			recordset->Close();
 		}
 		else{
 			_ftprintf(stderr, _T("Failed to connect database\n"));
+			hasError = true;
 		}
 	}catch(_com_error &e){
 		_ftprintf(stderr, _T("Error(0x%08x):%s\n"), e.Error() , (TCHAR *)e.Description());
+		hasError = true;
 	}
 
 	// close
@@ -256,5 +261,5 @@ int _tmain(int argc, TCHAR *argv[])
 
 	::CoUninitialize();
 
-	return 0;
+	return hasError ? 1 : 0;
 }
