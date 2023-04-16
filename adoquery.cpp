@@ -54,6 +54,146 @@ string createDefaultFormat(int fieldCount)
 	return formatStr;
 }
 
+bool matchChar(const TCHAR *&p, TCHAR ch)
+{
+	if(*p == ch){
+		++p;
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
+string getIdent(const TCHAR *&p)
+{
+	const TCHAR * const beg = p;
+	while((*p >= _T('A') && *p <= _T('Z')) || (*p >= _T('a') && *p <= _T('z')) || (*p >= '0' && *p <= '9') || *p == '_'){
+		++p;
+	}
+	return string(beg, p);
+}
+
+string getStringLiteral(const TCHAR *&p)
+{
+	if(!matchChar(p, _T('"'))){
+		return string();
+	}
+	const TCHAR * const beg = p;
+	while(*p != _T('"')){
+		if(*p == _T('\0')){
+			return string(); //error
+		}
+		//@todo skip \"
+		++p;
+	}
+	const TCHAR * const end = p;
+	++p;
+	return string(beg, end);
+}
+
+string getStringLiteralSingleQuoted(const TCHAR *&p)
+{
+	if(!matchChar(p, _T('\''))){
+		return string();
+	}
+	const TCHAR * const beg = p;
+	while(*p != _T('\'')){
+		if(*p == _T('\0')){
+			return string(); //error
+		}
+		++p;
+	}
+	const TCHAR * const end = p;
+	++p;
+	return string(beg, end);
+}
+
+string getIntegerLiteral(const TCHAR *&p)
+{
+	const TCHAR * const beg = p;
+	if(*p == '-'){
+		++p;
+	}
+	if(!(*p >= '0' && *p <= '9')){
+		return string(); //error
+	}
+	while(*p >= '0' && *p <= '9'){
+		++p;
+	}
+	return string(beg, p);
+}
+
+void skipWhiteSpaces(const TCHAR *&p)
+{
+	while(*p == _T(' ')){
+		++p;
+	}
+}
+
+string formatFunctionFieldReference(const TCHAR *&p, const std::vector<_bstr_t> &fields, bool escapeOutputValue)
+{
+	if(!matchChar(p, _T('('))){
+		return string(); //error
+	}
+	skipWhiteSpaces(p);
+	const string funName = getIdent(p);
+	if(funName.empty()){
+		return string(); //error
+	}
+	std::vector<string> args;
+	while(skipWhiteSpaces(p), !matchChar(p, _T(')'))){
+		if(*p == _T('(')){
+			args.push_back(formatFunctionFieldReference(p, fields, escapeOutputValue));
+		}
+		else if(*p == _T('"')){
+			args.push_back(getStringLiteral(p));
+		}
+		else if(*p == _T('\'')){
+			args.push_back(getStringLiteralSingleQuoted(p));
+		}
+		else if(*p == _T('-') || (*p >= _T('0') && *p <= _T('9'))){
+			args.push_back(getIntegerLiteral(p));
+		}
+		else {
+			return string(); //error
+		}
+	}
+
+	// Execute Function
+	if(funName == _T("field")){
+		const std::size_t fieldIndex = std::stoi(args[0]);
+		if(fieldIndex >= 0 && static_cast<std::size_t>(fieldIndex) < fields.size()){
+			// %<num>%
+			if(escapeOutputValue){
+				return escapeValue(fields[fieldIndex]);
+			}
+			else {
+				return string(fields[fieldIndex]);
+			}
+		}
+		else {
+			return string();
+		}
+	}
+	else if(funName == _T("remove_prefix")){
+		if(args.size() != 2){
+			return string();
+		}
+		const string prefix = args[0];
+		const string str = args[1];
+		if(str.compare(0, prefix.size(), prefix) == 0){
+			return args[1].substr(args[0].size());
+		}
+		else {
+			return args[1];
+		}
+	}
+	else{
+		return string();
+	}
+}
+
 /*
  * Return formatted fields string
  *
@@ -86,6 +226,11 @@ string formatFields(const string &formatStr, const std::vector<_bstr_t> &fields,
 			if(last == i + 1){
 				// %%
 				result +=_T('%');
+			}
+			else if(formatStr[i + 1] == _T('(')){
+				const TCHAR * const beg = &formatStr[i + 1];
+				const TCHAR *p = beg;
+				result += formatFunctionFieldReference(p, fields, escapeOutputValue);
 			}
 			else{
 				const int fieldIndex = std::stoi(formatStr.substr(i + 1, last - i - 1)) - 1;
@@ -150,7 +295,7 @@ int _tmain(int argc, TCHAR *argv[])
 
 	for(int i = 1; i < argc; ++i){
 		const TCHAR * const arg = argv[i];
-		if(arg[0] == _T('/') || arg[0] == _T('-')) {
+		if(arg[0] == _T('/') || arg[0] == _T('-')){
 			auto optIt = std::find_if(std::begin(options), std::end(options), [&arg](const Option &opt) {
 					return std::find_if(opt.switches.begin(), opt.switches.end(), [&arg](const TCHAR *optSw) {
 							return _tcsicmp(optSw, arg + 1) == 0; }) != opt.switches.end();

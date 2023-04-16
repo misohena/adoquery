@@ -17,6 +17,7 @@
 /header and /format can contain the following sequences:
 
 - %<digits>% :: Output field value specified by <digits>
+- %<function-style-format>% :: ~(field 0)~, ~(remove_prefix 'file:' (field 0))~
 - %% :: Output single %
 - \t :: Output TAB
 - \r :: Output CR
@@ -45,9 +46,23 @@ For more SQL Syntax and properties see below.
 - [[https://docs.microsoft.com/en-us/windows/desktop/search/-search-3x-wds-propertymappings][Property Mappings (from WDS 2.x to 3.x) - Windows applications | Microsoft Docs]]
 
 ** Build
-Use Visual Studio 2017
+Use Visual Studio 2022
 
+** Release
+*** 1.1.0 (2023-04-16)
+[[file:./ReleasedBinary/adoquery-1.1.0.exe]]
+
+- Visual Studio 2022
+- Add function style format
+
+  The following functions are available.
+  - ~(field <index>)~ (Note: index starts from 0)
+  - ~(remove_prefix <prefix> <string>)~
+
+*** 1.0.1
 [[file:./ReleasedBinary/adoquery-1.0.1.exe]]
+
+- Visual Studio 2017
 
 ** References
 
